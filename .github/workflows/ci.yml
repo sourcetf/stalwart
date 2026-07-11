@@ -11,8 +11,6 @@ on:
     tags: ["v*.*.*"]
 
 env:
-  SCCACHE_GHA_ENABLED: true
-  RUSTC_WRAPPER: sccache
   CARGO_TERM_COLOR: always
   AWS_LC_SYS_PREBUILT_NASM: 1
 
@@ -32,25 +30,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6.0.2
 
-      - name: Install musl toolchain
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y musl-tools
-          sudo ln -sf /usr/bin/g++ /usr/bin/x86_64-linux-musl-g++
-          sudo ln -sf /usr/bin/gcc /usr/bin/x86_64-linux-musl-gcc
-
-      - name: Run sccache-cache
-        uses: mozilla-actions/sccache-action@v0.0.10
-        with:
-          disable_annotations: true
-
-      - name: Build
-        env:
-          CC_x86_64_unknown_linux_musl: x86_64-linux-musl-gcc
-          CXX_x86_64_unknown_linux_musl: x86_64-linux-musl-g++
+      - name: Install Rust targets and cross
         run: |
           rustup target add x86_64-unknown-linux-musl
-          cargo build --release --target x86_64-unknown-linux-musl -p stalwart --no-default-features --features "sqlite postgres mysql rocks s3 redis azure nats enterprise"
+          cargo install cross --git https://github.com/cross-rs/cross --locked
+
+      - name: Build with cross
+        run: |
+          cross build --release --target x86_64-unknown-linux-musl -p stalwart --no-default-features --features "sqlite postgres mysql rocks s3 redis azure nats enterprise"
           mkdir -p artifacts
           mv ./target/x86_64-unknown-linux-musl/release/stalwart ./artifacts/stalwart
 
