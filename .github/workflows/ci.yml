@@ -26,11 +26,16 @@ jobs:
       id-token: write
       contents: write
       attestations: write
-    name: Build / x86_64-unknown-linux-gnu
+    name: Build / x86_64-unknown-linux-musl
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v6.0.2
+
+      - name: Install musl toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y musl-tools
 
       - name: Run sccache-cache
         uses: mozilla-actions/sccache-action@v0.0.10
@@ -39,14 +44,15 @@ jobs:
 
       - name: Build
         run: |
-          cargo build --release --target x86_64-unknown-linux-gnu -p stalwart --no-default-features --features "sqlite postgres mysql rocks s3 redis azure nats enterprise"
+          rustup target add x86_64-unknown-linux-musl
+          cargo build --release --target x86_64-unknown-linux-musl -p stalwart --no-default-features --features "sqlite postgres mysql rocks s3 redis azure nats enterprise"
           mkdir -p artifacts
-          mv ./target/x86_64-unknown-linux-gnu/release/stalwart ./artifacts/stalwart
+          mv ./target/x86_64-unknown-linux-musl/release/stalwart ./artifacts/stalwart
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v7
         with:
-          name: artifact-x86_64-unknown-linux-gnu
+          name: artifact-x86_64-unknown-linux-musl
           path: artifacts/stalwart
 
   release:
@@ -73,7 +79,7 @@ jobs:
         run: |
           set -eux
           mkdir -p dist
-          tar -czf dist/stalwart-x86_64-unknown-linux-gnu.tar.gz -C archive stalwart
+          tar -czf dist/stalwart-x86_64-unknown-linux-musl.tar.gz -C archive stalwart
 
       - name: Attest binary
         id: attest
