@@ -64,22 +64,22 @@ jobs:
           sudo apt-get update
           case "${{matrix.target}}" in
             aarch64-unknown-linux-gnu)
-              sudo apt-get install -y gcc-aarch64-linux-gnu
+              sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
               ;;
             aarch64-unknown-linux-musl)
-              sudo apt-get install -y musl-tools gcc-aarch64-linux-gnu
+              sudo apt-get install -y musl-tools gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
               ;;
             armv7-unknown-linux-gnueabihf)
-              sudo apt-get install -y gcc-arm-linux-gnueabihf
+              sudo apt-get install -y gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
               ;;
             armv7-unknown-linux-musleabihf)
-              sudo apt-get install -y musl-tools gcc-arm-linux-gnueabihf
+              sudo apt-get install -y musl-tools gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
               ;;
             arm-unknown-linux-gnueabihf)
-              sudo apt-get install -y gcc-arm-linux-gnueabihf
+              sudo apt-get install -y gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
               ;;
             arm-unknown-linux-musleabihf)
-              sudo apt-get install -y musl-tools gcc-arm-linux-gnueabihf
+              sudo apt-get install -y musl-tools gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
               ;;
             x86_64-unknown-linux-musl)
               sudo apt-get install -y musl-tools
@@ -119,11 +119,17 @@ jobs:
         env:
           BUILD_ENV: ${{matrix.build_env}}
           CC_aarch64_unknown_linux_gnu: aarch64-linux-gnu-gcc
+          CXX_aarch64_unknown_linux_gnu: aarch64-linux-gnu-g++
           CC_aarch64_unknown_linux_musl: aarch64-linux-gnu-gcc
+          CXX_aarch64_unknown_linux_musl: aarch64-linux-gnu-g++
           CC_armv7_unknown_linux_gnueabihf: arm-linux-gnueabihf-gcc
+          CXX_armv7_unknown_linux_gnueabihf: arm-linux-gnueabihf-g++
           CC_armv7_unknown_linux_musleabihf: arm-linux-gnueabihf-gcc
+          CXX_armv7_unknown_linux_musleabihf: arm-linux-gnueabihf-g++
           CC_arm_unknown_linux_gnueabihf: arm-linux-gnueabihf-gcc
+          CXX_arm_unknown_linux_gnueabihf: arm-linux-gnueabihf-g++
           CC_arm_unknown_linux_musleabihf: arm-linux-gnueabihf-gcc
+          CXX_arm_unknown_linux_musleabihf: arm-linux-gnueabihf-g++
         run: |
           rustup target add ${{matrix.target}}
           ${{matrix.build_env}} cargo build --release --target ${{matrix.target}} -p stalwart --no-default-features --features "sqlite postgres mysql rocks s3 redis azure nats enterprise"
