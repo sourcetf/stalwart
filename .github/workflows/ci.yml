@@ -69,11 +69,15 @@ jobs:
           path: archive
           pattern: artifact-*
 
+      - name: Debug archive structure
+        run: ls -laR archive/
+
       - name: Compress
         run: |
           set -eux
           mkdir -p dist
-          tar -czf dist/stalwart-x86_64-unknown-linux-gnu.tar.gz -C archive/artifact-x86_64-unknown-linux-gnu stalwart
+          find archive -name stalwart -type f
+          tar -czf dist/stalwart-x86_64-unknown-linux-gnu.tar.gz -C $(dirname $(find archive -name stalwart -type f | head -1)) stalwart
 
       - name: Attest binary
         id: attest
