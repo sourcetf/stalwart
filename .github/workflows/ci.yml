@@ -59,6 +59,33 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6.0.2
 
+      - name: Install cross-compilation toolchain
+        run: |
+          sudo apt-get update
+          case "${{matrix.target}}" in
+            aarch64-unknown-linux-gnu)
+              sudo apt-get install -y gcc-aarch64-linux-gnu
+              ;;
+            aarch64-unknown-linux-musl)
+              sudo apt-get install -y musl-tools gcc-aarch64-linux-gnu
+              ;;
+            armv7-unknown-linux-gnueabihf)
+              sudo apt-get install -y gcc-arm-linux-gnueabihf
+              ;;
+            armv7-unknown-linux-musleabihf)
+              sudo apt-get install -y musl-tools gcc-arm-linux-gnueabihf
+              ;;
+            arm-unknown-linux-gnueabihf)
+              sudo apt-get install -y gcc-arm-linux-gnueabihf
+              ;;
+            arm-unknown-linux-musleabihf)
+              sudo apt-get install -y musl-tools gcc-arm-linux-gnueabihf
+              ;;
+            x86_64-unknown-linux-musl)
+              sudo apt-get install -y musl-tools
+              ;;
+          esac
+
       - name: Free disk space (heavy ARM targets)
         if: contains(matrix.target, 'arm')
         run: |
@@ -91,6 +118,12 @@ jobs:
       - name: Build
         env:
           BUILD_ENV: ${{matrix.build_env}}
+          CC_aarch64_unknown_linux_gnu: aarch64-linux-gnu-gcc
+          CC_aarch64_unknown_linux_musl: aarch64-linux-gnu-gcc
+          CC_armv7_unknown_linux_gnueabihf: arm-linux-gnueabihf-gcc
+          CC_armv7_unknown_linux_musleabihf: arm-linux-gnueabihf-gcc
+          CC_arm_unknown_linux_gnueabihf: arm-linux-gnueabihf-gcc
+          CC_arm_unknown_linux_musleabihf: arm-linux-gnueabihf-gcc
         run: |
           rustup target add ${{matrix.target}}
           ${{matrix.build_env}} cargo build --release --target ${{matrix.target}} -p stalwart --no-default-features --features "sqlite postgres mysql rocks s3 redis azure nats enterprise"
