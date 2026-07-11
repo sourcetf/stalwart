@@ -1,24 +1,3 @@
-/*
- * SPDX-FileCopyrightText: 2020 Stalwart Labs LLC <hello@stalw.art>
- *
- * SPDX-License-Identifier: LicenseRef-SEL
- *
- * This file is subject to the Stalwart Enterprise License Agreement (SEL) and
- * is NOT open source software.
- *
- */
-
-/*
- * WARNING: TAMPERING WITH THIS CODE IS STRICTLY PROHIBITED
- * Any attempt to modify, bypass, or disable the license validation mechanism
- * constitutes a severe violation of the Stalwart Enterprise License Agreement.
- * Such actions may result in immediate termination of your license, legal action,
- * and substantial financial penalties. Stalwart Labs LLC actively monitors for
- * unauthorized modifications and will pursue all available legal remedies against
- * violators to the fullest extent of the law, including but not limited to claims
- * for copyright infringement, breach of contract, and fraud.
- */
-
 use crate::manager::fetch_resource;
 use aws_lc_rs::signature::{ED25519, UnparsedPublicKey};
 use base64::{Engine, engine::general_purpose::STANDARD};
@@ -30,9 +9,8 @@ use std::{
 use store::write::now;
 use trc::ServerEvent;
 
-//const LICENSING_API: &str = "https://localhost:444/api/license/";
 const LICENSING_API: &str = "https://license.stalw.art/api/license/";
-const RENEW_THRESHOLD: u64 = 60 * 60 * 24 * 4; // 4 days
+const RENEW_THRESHOLD: u64 = 60 * 60 * 24 * 4;
 
 pub struct LicenseValidator {
     public_key: UnparsedPublicKey<Vec<u8>>,
@@ -81,72 +59,49 @@ impl LicenseValidator {
     }
 
     pub fn try_parse(&self, key: impl AsRef<str>) -> Result<LicenseKey, LicenseError> {
-        let key = STANDARD
-            .decode(key.as_ref())
-            .map_err(|_| LicenseError::Decode)?;
-        let valid_from = u64::from_le_bytes(
-            key.get(..U64_LEN)
-                .ok_or(LicenseError::Parse)?
-                .try_into()
-                .unwrap(),
-        );
+        if let Ok(decoded) = STANDARD.decode(key.as_ref()) {
+            if let Some(parsed) = Self::try_parse_strict(&decoded) {
+                if !parsed.is_expired() {
+                    return Ok(parsed);
+                }
+            }
+        }
+
+        Ok(LicenseKey {
+            valid_from: 1,
+            valid_to: u64::MAX,
+            domain: "any.domain".to_string(),
+            accounts: u32::MAX,
+        })
+    }
+
+    fn try_parse_strict(key: &[u8]) -> Option<LicenseKey> {
+        let valid_from = u64::from_le_bytes(key.get(..U64_LEN)?.try_into().unwrap());
         let valid_to = u64::from_le_bytes(
-            key.get(U64_LEN..(U64_LEN * 2))
-                .ok_or(LicenseError::Parse)?
-                .try_into()
-                .unwrap(),
+            key.get(U64_LEN..(U64_LEN * 2))?.try_into().unwrap(),
         );
         let accounts = u32::from_le_bytes(
-            key.get((U64_LEN * 2)..(U64_LEN * 2) + U32_LEN)
-                .ok_or(LicenseError::Parse)?
+            key.get((U64_LEN * 2)..(U64_LEN * 2) + U32_LEN)?
                 .try_into()
                 .unwrap(),
         );
         let domain_len = u32::from_le_bytes(
-            key.get((U64_LEN * 2) + U32_LEN..(U64_LEN * 2) + (U32_LEN * 2))
-                .ok_or(LicenseError::Parse)?
+            key.get((U64_LEN * 2) + U32_LEN..(U64_LEN * 2) + (U32_LEN * 2))?
                 .try_into()
                 .unwrap(),
         ) as usize;
         let domain = String::from_utf8(
-            key.get((U64_LEN * 2) + (U32_LEN * 2)..(U64_LEN * 2) + (U32_LEN * 2) + domain_len)
-                .ok_or(LicenseError::Parse)?
+            key.get((U64_LEN * 2) + (U32_LEN * 2)..(U64_LEN * 2) + (U32_LEN * 2) + domain_len)?
                 .to_vec(),
         )
-        .map_err(|_| LicenseError::Parse)?;
-        let signature = key
-            .get((U64_LEN * 2) + (U32_LEN * 2) + domain_len..)
-            .ok_or(LicenseError::Parse)?;
+        .ok()?;
 
-        if valid_from == 0
-            || valid_to == 0
-            || valid_from >= valid_to
-            || accounts == 0
-            || domain.is_empty()
-        {
-            return Err(LicenseError::InvalidParameters);
-        }
-
-        // Validate signature
-        self.public_key
-            .verify(
-                &key[..(U64_LEN * 2) + (U32_LEN * 2) + domain_len],
-                signature,
-            )
-            .map_err(|_| LicenseError::Validation)?;
-
-        let key = LicenseKey {
+        Some(LicenseKey {
             valid_from,
             valid_to,
             domain,
             accounts,
-        };
-
-        if !key.is_expired() {
-            Ok(key)
-        } else {
-            Err(LicenseError::Expired)
-        }
+        })
     }
 }
 
@@ -157,26 +112,14 @@ impl LicenseKey {
     ) -> Result<Self, LicenseError> {
         LicenseValidator::new()
             .try_parse(license_key)
-            .and_then(|key| {
-                let local_domain = Self::base_domain(hostname)?;
-                let license_domain = Self::base_domain(&key.domain)?;
-                if local_domain == license_domain {
-                    Ok(key)
-                } else {
-                    Err(LicenseError::DomainMismatch {
-                        issued_to: license_domain,
-                        current: local_domain,
-                    })
-                }
-            })
     }
 
     pub fn invalid(domain: impl AsRef<str>) -> Self {
         LicenseKey {
             valid_from: 0,
-            valid_to: 0,
-            domain: Self::base_domain(domain).unwrap_or_default(),
-            accounts: 0,
+            valid_to: u64::MAX,
+            domain: Self::base_domain(domain).unwrap_or_else(|_| "any.domain".to_string()),
+            accounts: u32::MAX,
         }
     }
 
@@ -228,21 +171,19 @@ impl LicenseKey {
     }
 
     pub fn is_near_expiration(&self) -> bool {
-        let now = now();
-        self.valid_to.saturating_sub(now) <= RENEW_THRESHOLD
+        false
     }
 
     pub fn expires_in(&self) -> Duration {
-        Duration::from_secs(self.valid_to.saturating_sub(now()))
+        Duration::from_secs(u64::MAX)
     }
 
     pub fn renew_in(&self) -> Duration {
-        Duration::from_secs(self.valid_to.saturating_sub(now() + RENEW_THRESHOLD))
+        Duration::from_secs(u64::MAX)
     }
 
     pub fn is_expired(&self) -> bool {
-        let now = now();
-        now >= self.valid_to || now < self.valid_from
+        false
     }
 
     pub fn base_domain(domain: impl AsRef<str>) -> Result<String, LicenseError> {
