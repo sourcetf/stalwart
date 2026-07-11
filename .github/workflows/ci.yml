@@ -33,7 +33,7 @@ jobs:
         uses: actions/checkout@v6.0.2
 
       - name: Run sccache-cache
-        uses: mozilla-actions/sccache-action@v0.0.9
+        uses: mozilla-actions/sccache-action@v0.0.14
         with:
           disable_annotations: true
 
@@ -47,7 +47,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: artifact-x86_64-unknown-linux-gnu
-          path: artifacts
+          path: artifacts/stalwart
 
   release:
     name: Release
@@ -72,19 +72,19 @@ jobs:
       - name: Compress
         run: |
           set -eux
-          cd archive/artifact-x86_64-unknown-linux-gnu
-          tar -czf stalwart-x86_64-unknown-linux-gnu.tar.gz stalwart
+          mkdir -p dist
+          tar -czf dist/stalwart-x86_64-unknown-linux-gnu.tar.gz -C archive/artifact-x86_64-unknown-linux-gnu stalwart
 
       - name: Attest binary
         id: attest
         uses: actions/attest-build-provenance@v4
         with:
-          subject-path: archive/**/*.tar.gz
+          subject-path: dist/*.tar.gz
 
       - name: Use cosign to sign
         uses: sigstore/gh-action-sigstore-python@v3.3.0
         with:
-          inputs: archive/**/*.tar.gz
+          inputs: dist/*.tar.gz
 
       - name: Build release body
         run: |
@@ -104,8 +104,8 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           files: |
-            archive/**/*.tar.gz
-            archive/**/*.sigstore.json
+            dist/*.tar.gz
+            dist/*.sigstore.json
           prerelease: ${{!startsWith(github.ref, 'refs/tags/') || null}}
           tag_name: ${{!startsWith(github.ref, 'refs/tags/') && 'nightly' || null}}
           draft: ${{ startsWith(github.ref, 'refs/tags/') || null }}
