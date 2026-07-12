@@ -199,15 +199,10 @@ Options:
 
 With no PREFIX, Stalwart is installed under standard FHS paths:
   binary   /usr/local/bin/stalwart
-  config   /etc/stalwart/config.json      (created by the daemon on first run)
-  env      /etc/stalwart/stalwart.env
+  config   /etc/stalwart/config.json      (/usr/local/etc/stalwart/config.json on FreeBSD)
+  env      /etc/stalwart/stalwart.env     (/usr/local/etc/stalwart/stalwart.env on FreeBSD)
   logs     /var/log/stalwart/
-  data     /var/lib/stalwart/
-
-On FreeBSD, config and data follow hier(7) instead:
-  config   /usr/local/etc/stalwart/config.json
-  env      /usr/local/etc/stalwart/stalwart.env
-  data     /var/db/stalwart/
+  data     /var/lib/stalwart/             (/var/db/stalwart on FreeBSD)
 
 When PREFIX is provided, a self-contained layout is used instead:
   binary   $PREFIX/bin/stalwart

@@ -1,6 +1,6 @@
 [package]
 name = "email"
-version = "0.16.12"
+version = "0.16.13"
 edition = "2024"
 
 [dependencies]
@@ -35,6 +35,7 @@ sequoia-openpgp = { version = "2.0", default-features = false, features = ["cryp
 hashify = "0.2"
 rkyv = { version = "0.8.10", features = ["little_endian"] }
 compact_str = "0.9.0"
+tinyvec = { version = "1.10.0", features = ["alloc"] }
 
 [features]
 test_mode = []
