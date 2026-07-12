@@ -13,9 +13,7 @@ use crate::{
         ingest::{EmailIngest, IngestEmail, IngestSource, IngestedEmail},
     },
 };
-use common::{
-    Server, auth::AccessToken, expr::functions::EmptyResolver, scripts::plugins::PluginContext,
-};
+use common::{Server, auth::AccessToken, scripts::plugins::PluginContext};
 use mail_builder::headers::date::Date;
 use mail_parser::{HeaderName, MessageParser};
 use sieve::{Envelope, Event, Input, Mailbox, Recipient, Sieve, SpamStatus};
@@ -114,14 +112,6 @@ impl SieveScriptIngest for Server {
             .iter()
             .filter(|header| matches!(header.name, HeaderName::Received))
             .count();
-        let max_received_headers = self
-            .eval_if(
-                &self.core.smtp.session.data.max_received_headers,
-                &EmptyResolver,
-                session_id,
-            )
-            .await
-            .unwrap_or(50);
 
         // Obtain mailboxIds
         let account_id = access_token.account_id();
@@ -404,12 +394,12 @@ impl SieveScriptIngest for Server {
                     } => {
                         input = true.into();
                         if let Some(message) = messages.get(message_id) {
-                            if received_headers >= max_received_headers {
+                            if received_headers >= self.core.sieve.max_received_headers {
                                 trc::event!(
                                     Smtp(SmtpEvent::LoopDetected),
                                     From = mail_from.clone(),
                                     Total = received_headers,
-                                    Limit = max_received_headers,
+                                    Limit = self.core.sieve.max_received_headers,
                                     SpanId = session_id,
                                 );
 

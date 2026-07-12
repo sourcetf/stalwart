@@ -45,7 +45,10 @@ pub async fn test() {
             email: "jane.smith@example.org".into(),
             email_aliases: vec![],
             secret: Some("$app$4096614298472586996$".into()),
-            groups: Some(vec!["sales@example.org".into(), "corporate@example.org".into()]),
+            groups: Some(vec![
+                "sales@example.org".into(),
+                "corporate@example.org".into()
+            ]),
             description: Some("Jane Smith".into()),
         }
     );
@@ -107,7 +110,10 @@ pub async fn test() {
             email: "jane.smith@example.org".into(),
             email_aliases: vec![],
             secret: Some("this is Jane's LDAP password".into()),
-            groups: Some(vec!["sales@example.org".into(), "corporate@example.org".into()]),
+            groups: Some(vec![
+                "sales@example.org".into(),
+                "corporate@example.org".into()
+            ]),
             description: Some("Jane Smith".into())
         })
     );

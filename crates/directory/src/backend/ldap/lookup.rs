@@ -146,7 +146,11 @@ impl LdapDirectory {
                     }
                 }
             }
-            result.account.groups = if groups.is_empty() { None } else { Some(groups) };
+            result.account.groups = if groups.is_empty() {
+                None
+            } else {
+                Some(groups)
+            };
         } else if let Some(filter) = &self.mappings.filter_member_of {
             let filter = filter.build(&result.dn);
             let rs = conn
