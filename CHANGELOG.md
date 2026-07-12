@@ -23,6 +23,7 @@ If you are upgrading from v0.16.x, replace the binary (or run `docker pull`). If
 - Branding: Custom logos for domains do not work.
 - Sieve: add `Received` headers to auto-generated messages and detect loops.
 - MTA: Resume queue processing does not work.
+- Misconfigured in-memory store cannot be recovered in recovery mode.
 
 ## [0.16.12] - 2026-07-06
 
