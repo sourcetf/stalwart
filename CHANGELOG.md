@@ -14,6 +14,13 @@ If you are upgrading from v0.16.x, replace the binary (or run `docker pull`). If
 ## Fixed
 - OAuth resource indicators: Accept `imap`, `smtp`, `pop3` and `sieve` as valid resource indicators for OAuth access tokens.
 - PostgreSQL: Incomplete channel binding implementation.
+- JMAP:
+  - VacationResponse: `isEnabled` reset to false whenever properties are changed.
+  - Capabilities: Return RFC-3339-conformant UTCDate literals in capabilities: min `0001-01-01T00:00:00Z`, max `9999-12-31T23:59:59Z`.
+- Directory: Update local groups only when the external directory includes a group attribute.
+- Reject invalid duration values (e.g. `1h30m`).
+- Branding: Custom logos for domains do not work.
+- Sieve: add `Received` headers to auto-generated messages and detect loops.
 
 ## [0.16.12] - 2026-07-06
 
