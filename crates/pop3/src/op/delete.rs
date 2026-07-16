@@ -107,7 +107,7 @@ impl<T: SessionStream> Session<T> {
                 }
                 if not_deleted.is_empty() {
                     self.write_ok(format!(
-                        "Stalwart POP3 bids you farewell ({num_deleted} messages deleted)."
+                        "POP3 Server bids you farewell ({num_deleted} messages deleted)."
                     ))
                     .await?;
                 } else {
