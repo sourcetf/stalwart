@@ -784,7 +784,7 @@ impl From<HeaderName<'_>> for MetadataHeaderName {
 
                     // Client/Agent
                     "X-Mailer" => MetadataHeaderName::XMailer,
-//                    "User-Agent" => MetadataHeaderName::UserAgent,
+                    "User-Agent" => MetadataHeaderName::UserAgent,
                     "X-MimeOLE" => MetadataHeaderName::XMimeOLE,
 
                     // Network/Origin
