@@ -29,6 +29,7 @@ use common::{
 };
 use mail_auth::{
     AuthenticatedMessage, AuthenticationResults, Dkim2Result, DkimResult, DmarcResult, ReceivedSpf,
+    SpfOutput, SpfResult,
     common::{
         crypto::Algorithm,
         headers::{Header, HeaderWriter},
@@ -349,8 +350,16 @@ impl<T: SessionStream> Session<T> {
 
         // Verify DMARC
         let is_report = !self.is_authenticated() && self.is_report();
-        let (dmarc_result, dmarc_policy) = match &self.data.spf_mail_from {
-            Some(spf_output) if dmarc.verify() => {
+        let (dmarc_result, dmarc_policy) = if dmarc.verify() {
+            {
+                let synthetic_spf;
+                let spf_output = match &self.data.spf_mail_from {
+                    Some(spf_output) => spf_output,
+                    None => {
+                        synthetic_spf = SpfOutput::new(String::new()).with_result(SpfResult::None);
+                        &synthetic_spf
+                    }
+                };
                 let time = Instant::now();
                 let dmarc_output =
                     self.server
@@ -432,7 +441,8 @@ impl<T: SessionStream> Session<T> {
 
                 (dmarc_result.into(), dmarc_policy.into())
             }
-            _ => (None, None),
+        } else {
+            (None, None)
         };
 
         // Analyze reports

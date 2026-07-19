@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.16.14] - 2026-07-XX
+
+If you are upgrading from v0.16.x, replace the binary (or run `docker pull`). If you are upgrading from v0.15.x and below, please read the [upgrading documentation](https://github.com/stalwartlabs/stalwart/blob/main/UPGRADING/v0_16.md) for more information on how to upgrade from previous versions.
+
+## Added
+
+## Changed
+
+## Fixed
+- IMAP:
+  - Mailbox object-quota only enforced in JMAP.
+  - Pipelined `STORE` and `EXPUNGE` can execute out of order.
+- JMAP: 
+  - Read-only sharee cannot set `isSubscribed` on a shared mailbox.
+  - Web Push payloads with `Content-Encoding: aes128gcm` should not be base64-encoded but sent as raw bytes.
+  - `Email/import` does not send push notifications for imported messages.
+  - `CalendarEvent/set` silently ignores `ifInState`.
+- MTA: DMARC is skipped when MAIL FROM SPF is unavailable.
+- Calendar: 
+  - Uppercase `MAILTO` calendar addresses become invalid SMTP recipients.
+  - Scheduling invitations on a shared, non-owned calendar fail with `MAIL FROM unauthorized`.
+
 ## [0.16.13] - 2026-07-12
 
 If you are upgrading from v0.16.x, replace the binary (or run `docker pull`). If you are upgrading from v0.15.x and below, please read the [upgrading documentation](https://github.com/stalwartlabs/stalwart/blob/main/UPGRADING/v0_16.md) for more information on how to upgrade from previous versions.

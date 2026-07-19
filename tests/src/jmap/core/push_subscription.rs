@@ -5,7 +5,6 @@
  */
 
 use crate::{AssertConfig, utils::server::TestServer};
-use base64::{Engine, engine::general_purpose};
 use common::{config::server::Listeners, network::SessionData};
 use ece::EcKeyComponents;
 use http_proto::{HtmlResponse, ToHttpResponse, request::fetch_body};
@@ -290,12 +289,7 @@ impl common::network::SessionManager for SessionManager {
                                 .is_some_and(|encoding| encoding.to_str().unwrap() == "aes128gcm");
                             let body = fetch_body(&mut req, 1024 * 1024, 0).await.unwrap();
                             let message = serde_json::from_slice::<PushMessage>(&if is_encrypted {
-                                ece::decrypt(
-                                    &push.keypair,
-                                    &push.auth_secret,
-                                    &general_purpose::URL_SAFE.decode(body).unwrap(),
-                                )
-                                .unwrap()
+                                ece::decrypt(&push.keypair, &push.auth_secret, &body).unwrap()
                             } else {
                                 body
                             })

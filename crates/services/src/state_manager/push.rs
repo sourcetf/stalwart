@@ -223,7 +223,8 @@ pub fn spawn_push_manager(inner: Arc<Inner>) -> mpsc::Sender<Event> {
                                                 ),
                                                 Id::from(subscription.id),
                                                 subscription.verification_code
-                                            ),
+                                            )
+                                            .into_bytes(),
                                             push_timeout,
                                         )
                                         .await;

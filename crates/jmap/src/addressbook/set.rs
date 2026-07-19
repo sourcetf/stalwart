@@ -5,6 +5,7 @@
  */
 
 use crate::api::acl::{JmapAcl, JmapRights};
+use crate::changes::state::JmapCacheState;
 use common::{Server, auth::AccessToken, sharing::EffectiveAcl};
 use groupware::{
     DestroyArchive,
@@ -58,7 +59,8 @@ impl AddressBookSet for Server {
                 SyncCollection::AddressBook,
             )
             .await?;
-        let mut response = SetResponse::from_request(&request, self.core.jmap.set_max_objects)?;
+        let mut response = SetResponse::from_request(&request, self.core.jmap.set_max_objects)?
+            .with_state(cache.assert_state(true, &request.if_in_state)?);
         let will_destroy = response.collect_will_destroy(request.unwrap_destroy());
         let is_shared = access_token.is_shared(account_id);
         let mut set_default = None;

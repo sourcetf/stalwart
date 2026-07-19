@@ -6,7 +6,6 @@
 
 use super::{Event, ece::ece_encrypt};
 use crate::state_manager::PushRegistration;
-use base64::Engine;
 use calcard::jscalendar::JSCalendarDateTime;
 use common::ipc::PushNotification;
 use email::push::PushSubscription;
@@ -80,7 +79,7 @@ impl PushRegistration {
                 .send(
                     if http_request(
                         &server,
-                        serde_json::to_string(&response).unwrap(),
+                        serde_json::to_string(&response).unwrap().into_bytes(),
                         push_timeout,
                     )
                     .await
@@ -98,7 +97,7 @@ impl PushRegistration {
 
 pub(crate) async fn http_request(
     details: &PushSubscription,
-    mut body: String,
+    mut body: Vec<u8>,
     push_timeout: Duration,
 ) -> bool {
     let client_builder = reqwest::Client::builder().timeout(push_timeout);
@@ -114,9 +113,7 @@ pub(crate) async fn http_request(
         .header("TTL", "86400");
 
     if let Some(keys) = &details.keys {
-        match ece_encrypt(&keys.p256dh, &keys.auth, body.as_bytes())
-            .map(|b| base64::engine::general_purpose::URL_SAFE.encode(b))
-        {
+        match ece_encrypt(&keys.p256dh, &keys.auth, &body) {
             Ok(body_) => {
                 body = body_;
                 client = client.header(CONTENT_ENCODING, "aes128gcm");

@@ -5,6 +5,7 @@
  */
 
 use crate::calendar_event::{CalendarSyntheticId, assert_is_unique_uid};
+use crate::changes::state::JmapCacheState;
 use calcard::{
     common::timezone::Tz,
     icalendar::{
@@ -93,10 +94,11 @@ impl CalendarEventSet for Server {
             )
             .await?;
         let account_info = self
-            .account_info(access_token.account_id())
+            .scheduling_account_info(access_token.account_id(), account_id)
             .await
             .caused_by(trc::location!())?;
-        let mut response = SetResponse::from_request(&request, self.core.jmap.set_max_objects)?;
+        let mut response = SetResponse::from_request(&request, self.core.jmap.set_max_objects)?
+            .with_state(cache.assert_state(false, &request.if_in_state)?);
         let will_destroy = response.collect_will_destroy(request.unwrap_destroy());
 
         // Obtain calendarIds
