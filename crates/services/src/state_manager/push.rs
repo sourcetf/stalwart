@@ -11,7 +11,7 @@ use common::{
     auth::BuildAccessToken,
     ipc::{PushEvent, PushNotification},
 };
-use email::push::PushSubscriptions;
+use email::push::{PushSubscription, PushSubscriptions};
 use std::{
     collections::hash_map::Entry,
     sync::Arc,
@@ -161,6 +161,7 @@ pub fn spawn_push_manager(inner: Arc<Inner>) -> mpsc::Sender<Event> {
 
                         // Process subscriptions
                         let current_time = now();
+                        let mut newest_unverified: Option<Arc<PushSubscription>> = None;
                         for subscription in subscriptions
                             .subscriptions
                             .into_iter()
@@ -194,54 +195,58 @@ pub fn spawn_push_manager(inner: Arc<Inner>) -> mpsc::Sender<Event> {
                                     }
                                 }
                             } else {
-                                let current_time = Instant::now();
-
-                                #[cfg(feature = "test_mode")]
-                                if subscription.url.contains("skip_checks") {
-                                    last_verify.insert(
-                                        account_id,
-                                        current_time
-                                            - (push_verify_timeout + Duration::from_millis(1)),
-                                    );
+                                match &newest_unverified {
+                                    Some(existing) if existing.id >= subscription.id => {}
+                                    _ => newest_unverified = Some(subscription),
                                 }
+                            }
+                        }
 
-                                if last_verify
-                                    .get(&account_id)
-                                    .map(|last_verify| {
-                                        current_time - *last_verify > push_verify_timeout
-                                    })
-                                    .unwrap_or(true)
-                                {
-                                    tokio::spawn(async move {
-                                        http_request(
-                                            &subscription,
-                                            format!(
-                                                concat!(
-                                                    "{{\"@type\":\"PushVerification\",",
-                                                    "\"pushSubscriptionId\":\"{}\",",
-                                                    "\"verificationCode\":\"{}\"}}"
-                                                ),
-                                                Id::from(subscription.id),
-                                                subscription.verification_code
-                                            )
-                                            .into_bytes(),
-                                            push_timeout,
+                        if let Some(subscription) = newest_unverified {
+                            let current_time = Instant::now();
+
+                            #[cfg(feature = "test_mode")]
+                            if subscription.url.contains("skip_checks") {
+                                last_verify.insert(
+                                    account_id,
+                                    current_time - (push_verify_timeout + Duration::from_millis(1)),
+                                );
+                            }
+
+                            if last_verify
+                                .get(&account_id)
+                                .map(|last_verify| {
+                                    current_time - *last_verify > push_verify_timeout
+                                })
+                                .unwrap_or(true)
+                            {
+                                tokio::spawn(async move {
+                                    http_request(
+                                        &subscription,
+                                        format!(
+                                            concat!(
+                                                "{{\"@type\":\"PushVerification\",",
+                                                "\"pushSubscriptionId\":\"{}\",",
+                                                "\"verificationCode\":\"{}\"}}"
+                                            ),
+                                            Id::from(subscription.id),
+                                            subscription.verification_code
                                         )
-                                        .await;
-                                    });
+                                        .into_bytes(),
+                                        push_timeout,
+                                    )
+                                    .await;
+                                });
 
-                                    last_verify.insert(account_id, current_time);
-                                } else {
-                                    trc::event!(
-                                        PushSubscription(PushSubscriptionEvent::Error),
-                                        Details = "Failed to verify push subscription",
-                                        Url = subscription.url.clone(),
-                                        AccountId = account_id,
-                                        Reason = "Too many requests"
-                                    );
-
-                                    continue;
-                                }
+                                last_verify.insert(account_id, current_time);
+                            } else {
+                                trc::event!(
+                                    PushSubscription(PushSubscriptionEvent::Error),
+                                    Details = "Failed to verify push subscription",
+                                    Url = subscription.url.clone(),
+                                    AccountId = account_id,
+                                    Reason = "Too many requests"
+                                );
                             }
                         }
 

@@ -17,12 +17,19 @@ If you are upgrading from v0.16.x, replace the binary (or run `docker pull`). If
 - JMAP: 
   - Read-only sharee cannot set `isSubscribed` on a shared mailbox.
   - Web Push payloads with `Content-Encoding: aes128gcm` should not be base64-encoded but sent as raw bytes.
+  - Stale push subscription can block verification of a new one.
+  - `PushSubscription/set` rejects the unpadded base64url keys the W3C Push API produces.
   - `Email/import` does not send push notifications for imported messages.
   - `CalendarEvent/set` silently ignores `ifInState`.
-- MTA: DMARC is skipped when MAIL FROM SPF is unavailable.
+- CalDAV: `calendar-query` REPORT returns empty calendar-data for JMAP-created events.
+- MTA: 
+  - DMARC is skipped when MAIL FROM SPF is unavailable.
+  - `queue_name` variable not available in rate limiter expressions.
 - Calendar: 
+  - No expanded occurrences are returned for a daily recurrences crossing DST.
   - Uppercase `MAILTO` calendar addresses become invalid SMTP recipients.
   - Scheduling invitations on a shared, non-owned calendar fail with `MAIL FROM unauthorized`.
+- HTTP: Disable `allowedEndpoints` expression in recovery mode.
 
 ## [0.16.13] - 2026-07-12
 

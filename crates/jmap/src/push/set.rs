@@ -4,7 +4,10 @@
  * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-SEL
  */
 
-use base64::{Engine, engine::general_purpose};
+use base64::{
+    Engine, alphabet,
+    engine::{DecodePaddingMode, GeneralPurpose, GeneralPurposeConfig},
+};
 use common::{Server, auth::AccessToken, ipc::PushEvent};
 use email::push::{Keys, PushSubscription, PushSubscriptions};
 use jmap_proto::{
@@ -30,6 +33,10 @@ use utils::map::bitmap::Bitmap;
 
 const EXPIRES_MAX: i64 = 7 * 24 * 3600; // 7 days
 const VERIFICATION_CODE_LEN: usize = 32;
+const URL_SAFE_INDIFFERENT: GeneralPurpose = GeneralPurpose::new(
+    &alphabet::URL_SAFE,
+    GeneralPurposeConfig::new().with_decode_padding_mode(DecodePaddingMode::Indifferent),
+);
 
 pub trait PushSubscriptionSet: Sync + Send {
     fn push_subscription_set(
@@ -304,12 +311,22 @@ fn validate_push_value(
                 value
                     .get(&Key::Property(PushSubscriptionProperty::Auth))
                     .and_then(|v| v.as_str())
-                    .and_then(|v| general_purpose::URL_SAFE.decode(v.as_ref()).ok()),
+                    .and_then(|v| URL_SAFE_INDIFFERENT.decode(v.as_ref()).ok()),
                 value
                     .get(&Key::Property(PushSubscriptionProperty::P256dh))
                     .and_then(|v| v.as_str())
-                    .and_then(|v| general_purpose::URL_SAFE.decode(v.as_ref()).ok()),
+                    .and_then(|v| URL_SAFE_INDIFFERENT.decode(v.as_ref()).ok()),
             ) {
+                if p256::PublicKey::from_sec1_bytes(&p256dh).is_err() {
+                    return Err(SetError::invalid_properties()
+                        .with_property(property.clone())
+                        .with_description("Invalid P-256 ECDH public key."));
+                }
+                if auth.len() != 16 {
+                    return Err(SetError::invalid_properties()
+                        .with_property(property.clone())
+                        .with_description("Invalid auth secret, expected 16 octets."));
+                }
                 push.keys = Some(Keys { auth, p256dh });
             } else {
                 return Err(SetError::invalid_properties()
