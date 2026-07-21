@@ -1169,6 +1169,8 @@ pub enum Property {
     Vrfy = 526,
     WaitOnFail = 548,
     WapiVersion = 893,
+    WebPushContact = 922,
+    WebPushKey = 921,
     WebsocketHeartbeat = 455,
     WebsocketThrottle = 456,
     WebsocketTimeout = 457,

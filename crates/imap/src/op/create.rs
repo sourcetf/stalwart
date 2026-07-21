@@ -88,7 +88,8 @@ impl<T: SessionStream> SessionData<T> {
         if mailbox_count + params.path.len()
             > self
                 .server
-                .object_quota(account.object_quotas(), StorageQuota::MaxMailboxes) as usize
+                .object_quota(account.object_quotas(), StorageQuota::MaxMailboxes)
+                as usize
         {
             return Err(trc::ImapEvent::Error
                 .into_err()

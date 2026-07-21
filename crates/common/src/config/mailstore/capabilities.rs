@@ -13,7 +13,7 @@ use jmap_proto::{
         BlobCapabilities, CalendarCapabilities, Capabilities, Capability, ContactsCapabilities,
         CoreCapabilities, EmptyCapabilities, FileNodeCapabilities, MailCapabilities,
         PrincipalAvailabilityCapabilities, PrincipalCapabilities, SieveAccountCapabilities,
-        SieveSessionCapabilities, SubmissionCapabilities,
+        SieveSessionCapabilities, SubmissionCapabilities, WebPushCapabilities,
     },
     types::date::UTCDate,
 };
@@ -295,5 +295,19 @@ impl JmapConfig {
             Capability::Quota,
             Capabilities::Empty(EmptyCapabilities::default()),
         );
+
+        // Add Web Push VAPID capabilities
+        if let Some(application_server_key) = self
+            .vapid
+            .as_ref()
+            .map(|vapid| vapid.public_key().to_string())
+        {
+            self.capabilities.session.append(
+                Capability::WebPushVapid,
+                Capabilities::WebPush(WebPushCapabilities {
+                    application_server_key,
+                }),
+            );
+        }
     }
 }

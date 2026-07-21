@@ -1322,6 +1322,8 @@ impl EnumImpl for Property {
             b"vrfy" => Property::Vrfy,
             b"waitOnFail" => Property::WaitOnFail,
             b"wapiVersion" => Property::WapiVersion,
+            b"webPushContact" => Property::WebPushContact,
+            b"webPushKey" => Property::WebPushKey,
             b"websocketHeartbeat" => Property::WebsocketHeartbeat,
             b"websocketThrottle" => Property::WebsocketThrottle,
             b"websocketTimeout" => Property::WebsocketTimeout,
@@ -2248,6 +2250,8 @@ impl EnumImpl for Property {
             Property::Vrfy => "vrfy",
             Property::WaitOnFail => "waitOnFail",
             Property::WapiVersion => "wapiVersion",
+            Property::WebPushContact => "webPushContact",
+            Property::WebPushKey => "webPushKey",
             Property::WebsocketHeartbeat => "websocketHeartbeat",
             Property::WebsocketThrottle => "websocketThrottle",
             Property::WebsocketTimeout => "websocketTimeout",
@@ -3178,6 +3182,8 @@ impl EnumImpl for Property {
             526 => Some(Property::Vrfy),
             548 => Some(Property::WaitOnFail),
             893 => Some(Property::WapiVersion),
+            922 => Some(Property::WebPushContact),
+            921 => Some(Property::WebPushKey),
             455 => Some(Property::WebsocketHeartbeat),
             456 => Some(Property::WebsocketThrottle),
             457 => Some(Property::WebsocketTimeout),
@@ -3188,7 +3194,7 @@ impl EnumImpl for Property {
         }
     }
 
-    const COUNT: usize = 921;
+    const COUNT: usize = 923;
 }
 
 impl serde::Serialize for Property {

@@ -7,21 +7,31 @@
 use super::{Event, ece::ece_encrypt};
 use crate::state_manager::PushRegistration;
 use calcard::jscalendar::JSCalendarDateTime;
-use common::ipc::PushNotification;
+use common::{ipc::PushNotification, network::webpush::Vapid};
 use email::push::PushSubscription;
 use jmap_proto::{
     response::status::{EmailPushObject, PushObject},
     types::state::State,
 };
-use reqwest::header::{CONTENT_ENCODING, CONTENT_TYPE};
-use std::time::{Duration, Instant};
+use reqwest::header::{AUTHORIZATION, CONTENT_ENCODING, CONTENT_TYPE};
+use std::{
+    sync::Arc,
+    time::{Duration, Instant},
+};
+use store::write::now;
 use tokio::sync::mpsc;
 use trc::PushSubscriptionEvent;
 use types::{id::Id, type_state::DataType};
 use utils::map::vec_map::VecMap;
 
 impl PushRegistration {
-    pub fn send(&mut self, id: Id, push_tx: mpsc::Sender<Event>, push_timeout: Duration) {
+    pub fn send(
+        &mut self,
+        id: Id,
+        push_tx: mpsc::Sender<Event>,
+        push_timeout: Duration,
+        vapid: Option<Arc<Vapid>>,
+    ) {
         let server = self.server.clone();
         let notifications = std::mem::take(&mut self.notifications);
 
@@ -81,6 +91,7 @@ impl PushRegistration {
                         &server,
                         serde_json::to_string(&response).unwrap().into_bytes(),
                         push_timeout,
+                        vapid.as_deref(),
                     )
                     .await
                     {
@@ -99,6 +110,7 @@ pub(crate) async fn http_request(
     details: &PushSubscription,
     mut body: Vec<u8>,
     push_timeout: Duration,
+    vapid: Option<&Vapid>,
 ) -> bool {
     let client_builder = reqwest::Client::builder().timeout(push_timeout);
 
@@ -111,6 +123,10 @@ pub(crate) async fn http_request(
         .post(details.url.as_str())
         .header(CONTENT_TYPE, "application/json")
         .header("TTL", "86400");
+
+    if let Some(authorization) = vapid.and_then(|vapid| vapid.authorization(&details.url, now())) {
+        client = client.header(AUTHORIZATION, authorization);
+    }
 
     if let Some(keys) = &details.keys {
         match ece_encrypt(&keys.p256dh, &keys.auth, &body) {

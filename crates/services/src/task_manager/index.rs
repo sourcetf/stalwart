@@ -293,7 +293,7 @@ impl SearchIndexTask for Server {
 pub(crate) async fn reindex_telemetry(server: &Server) -> trc::Result<()> {
     let mut spans = Vec::new();
     server
-        .store()
+        .tracing_store()
         .iterate(
             IterateParams::new(
                 ValueKey::from(ValueClass::Telemetry(TelemetryClass::Span(0))),

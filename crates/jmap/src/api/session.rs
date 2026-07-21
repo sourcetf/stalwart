@@ -121,7 +121,9 @@ impl AccountCapabilities for AccessToken {
                     | Capability::Principals
                     | Capability::PrincipalsAvailability
                     | Capability::Stalwart => return true,
-                    Capability::Core | Capability::PrincipalsOwner => return false,
+                    Capability::Core | Capability::PrincipalsOwner | Capability::WebPushVapid => {
+                        return false;
+                    }
                 };
                 self.has_permission(permission)
             })

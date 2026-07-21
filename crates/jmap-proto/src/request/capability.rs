@@ -91,6 +91,8 @@ pub enum Capability {
     MailShare = 1 << 16,
     #[serde(rename(serialize = "urn:stalwart:jmap"))]
     Stalwart = 1 << 17,
+    #[serde(rename(serialize = "urn:ietf:params:jmap:webpush-vapid"))]
+    WebPushVapid = 1 << 18,
 }
 
 #[derive(Debug, Clone, Copy, Default)]
@@ -119,6 +121,7 @@ pub enum Capabilities {
     PrincipalsAvailability(PrincipalAvailabilityCapabilities),
     Calendar(CalendarCapabilities),
     FileNode(FileNodeCapabilities),
+    WebPush(WebPushCapabilities),
     Empty(EmptyCapabilities),
 }
 
@@ -291,6 +294,12 @@ pub struct FileNodeCapabilities {
     pub web_write_url_template: Option<String>,
 }
 
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct WebPushCapabilities {
+    #[serde(rename(serialize = "applicationServerKey"))]
+    pub application_server_key: String,
+}
+
 #[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct EmptyCapabilities {}
 
@@ -321,6 +330,7 @@ impl Capability {
             Capability::FileNode => "urn:ietf:params:jmap:filenode",
             Capability::MailShare => "urn:ietf:params:jmap:mail:share",
             Capability::Stalwart => "urn:stalwart:jmap",
+            Capability::WebPushVapid => "urn:ietf:params:jmap:webpush-vapid",
         }
     }
 
@@ -343,6 +353,7 @@ impl Capability {
             Capability::FileNode,
             Capability::MailShare,
             Capability::Stalwart,
+            Capability::WebPushVapid,
         ]
     }
 }
@@ -463,6 +474,7 @@ impl Capability {
             "urn:ietf:params:jmap:calendars:parse" => Capability::CalendarsParse,
             "urn:ietf:params:jmap:mail:share" => Capability::MailShare,
             "urn:stalwart:jmap" => Capability::Stalwart,
+            "urn:ietf:params:jmap:webpush-vapid" => Capability::WebPushVapid,
         )
     }
 }

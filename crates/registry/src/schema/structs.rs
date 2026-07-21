@@ -3181,6 +3181,10 @@ pub struct Jmap {
     pub websocket_timeout: Duration,
     #[serde(rename = "maxSubscriptions")]
     pub max_subscriptions: Option<u64>,
+    #[serde(rename = "webPushKey")]
+    pub web_push_key: SecretTextOptional,
+    #[serde(rename = "webPushContact")]
+    pub web_push_contact: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

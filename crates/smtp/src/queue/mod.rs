@@ -393,9 +393,7 @@ impl ResolveVariable for MessageWrapper {
                 .into(),
             ExpressionVariable::Priority => self.message.priority.into(),
             ExpressionVariable::QueueName => self.queue_name.as_str().into(),
-            ExpressionVariable::QueueAge => {
-                now().saturating_sub(self.message.created).into()
-            }
+            ExpressionVariable::QueueAge => now().saturating_sub(self.message.created).into(),
             ExpressionVariable::Source => if (self.message.flags & FROM_AUTHENTICATED) != 0 {
                 "authenticated"
             } else if (self.message.flags & FROM_UNAUTHENTICATED_DMARC) != 0 {

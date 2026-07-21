@@ -12,6 +12,7 @@ use crate::{
     },
     utils::{dns::DnsCache, server::TestServerBuilder},
 };
+use common::config::smtp::queue::QueueName;
 use mail_auth::{DnssecStatus, MX};
 use registry::{
     schema::{
@@ -25,7 +26,6 @@ use registry::{
     },
     types::{list::List, map::Map},
 };
-use common::config::smtp::queue::QueueName;
 use smtp::queue::{Message, QueueEnvelope, Recipient, throttle::IsAllowed};
 use std::{
     net::{IpAddr, Ipv4Addr},

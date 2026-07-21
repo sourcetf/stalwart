@@ -9,12 +9,12 @@ use crate::{
     spawn_op,
 };
 use common::{network::SessionStream, sharing::EffectiveAcl, storage::index::ObjectIndexBuilder};
+use email::cache::MessageCacheFetch;
 use imap_proto::{
     Command, ResponseCode, StatusResponse,
     protocol::{ObjectId, rename::Arguments},
     receiver::Request,
 };
-use email::cache::MessageCacheFetch;
 use registry::schema::enums::{Permission, StorageQuota};
 use std::time::Instant;
 use store::{

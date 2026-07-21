@@ -22798,7 +22798,7 @@ impl InMemoryStoreBase {
 
 impl ObjectImpl for Jmap {
     const FLAGS: u64 = OBJ_SINGLETON;
-    const VERSION: u8 = 0;
+    const VERSION: u8 = 1;
     const OBJECT: ObjectType = ObjectType::Jmap;
 
     fn validate(&self, errors: &mut Vec<ValidationError>) -> bool {
@@ -22884,6 +22884,13 @@ impl ObjectImpl for Jmap {
                 errors.push(ValidationError::min_value(Property::MaxSubscriptions, 1));
             }
         }
+        let value = &self.web_push_key;
+        value.validate(errors);
+        if let Some(value) = &self.web_push_contact {
+            if value.is_empty() {
+                errors.push(ValidationError::required(Property::WebPushContact));
+            }
+        }
         errors.len() == neb
     }
 
@@ -22920,6 +22927,8 @@ impl Pickle for Jmap {
         self.websocket_throttle.pickle(out);
         self.websocket_timeout.pickle(out);
         self.max_subscriptions.pickle(out);
+        self.web_push_key.pickle(out);
+        self.web_push_contact.pickle(out);
     }
 
     fn unpickle(stream: &mut crate::pickle::PickledStream<'_>) -> Option<Self> {
@@ -22952,6 +22961,12 @@ impl Pickle for Jmap {
         this.websocket_throttle = Pickle::unpickle(stream)?;
         this.websocket_timeout = Pickle::unpickle(stream)?;
         this.max_subscriptions = Pickle::unpickle(stream)?;
+        if stream.version() >= 1 {
+            this.web_push_key = Pickle::unpickle(stream)?;
+        }
+        if stream.version() >= 1 {
+            this.web_push_contact = Pickle::unpickle(stream)?;
+        }
         Some(this)
     }
 }
@@ -22987,13 +23002,15 @@ impl Default for Jmap {
             websocket_throttle: Duration::from_millis(1000),
             websocket_timeout: Duration::from_millis(600000),
             max_subscriptions: Some(15u64),
+            web_push_key: Default::default(),
+            web_push_contact: Default::default(),
         }
     }
 }
 
 impl IntoValue for Jmap {
     fn into_value(self) -> JmapValue<'static> {
-        let mut map = jmap_tools::Map::with_capacity(30);
+        let mut map = jmap_tools::Map::with_capacity(32);
         map.insert_unchecked(
             Property::ParseLimitEvent,
             self.parse_limit_event.into_value(),
@@ -23076,6 +23093,8 @@ impl IntoValue for Jmap {
             Property::MaxSubscriptions,
             self.max_subscriptions.into_value(),
         );
+        map.insert_unchecked(Property::WebPushKey, self.web_push_key.into_value());
+        map.insert_unchecked(Property::WebPushContact, self.web_push_contact.into_value());
         JmapValue::Object(map)
     }
 }
@@ -23119,6 +23138,10 @@ impl RegistryJsonPropertyPatch for Jmap {
             Some(Property::WebsocketThrottle) => self.websocket_throttle.patch(pointer, value),
             Some(Property::WebsocketTimeout) => self.websocket_timeout.patch(pointer, value),
             Some(Property::MaxSubscriptions) => self.max_subscriptions.patch(pointer, value),
+            Some(Property::WebPushKey) => self.web_push_key.patch(pointer, value),
+            Some(Property::WebPushContact) => self
+                .web_push_contact
+                .patch(pointer.with_validators(&[StringValidator::Trim]), value),
             Some(Property::Type) => Ok(MaybeUnpatched::Unpatched {
                 property: Property::Type,
                 value,

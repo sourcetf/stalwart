@@ -220,6 +220,7 @@ pub fn spawn_push_manager(inner: Arc<Inner>) -> mpsc::Sender<Event> {
                                 })
                                 .unwrap_or(true)
                             {
+                                let vapid = server.core.jmap.vapid.clone();
                                 tokio::spawn(async move {
                                     http_request(
                                         &subscription,
@@ -234,6 +235,7 @@ pub fn spawn_push_manager(inner: Arc<Inner>) -> mpsc::Sender<Event> {
                                         )
                                         .into_bytes(),
                                         push_timeout,
+                                        vapid.as_deref(),
                                     )
                                     .await;
                                 });
@@ -350,6 +352,7 @@ pub fn spawn_push_manager(inner: Arc<Inner>) -> mpsc::Sender<Event> {
                                                     *id,
                                                     push_tx.clone(),
                                                     push_timeout,
+                                                    server.core.jmap.vapid.clone(),
                                                 );
                                                 retry_ids.remove(id);
                                             } else {
@@ -436,7 +439,12 @@ pub fn spawn_push_manager(inner: Arc<Inner>) -> mpsc::Sender<Event> {
                                         && last_request >= push_attempt_interval))
                             {
                                 if subscription.num_attempts < push_attempts_max {
-                                    subscription.send(*retry_id, push_tx.clone(), push_timeout);
+                                    subscription.send(
+                                        *retry_id,
+                                        push_tx.clone(),
+                                        push_timeout,
+                                        server.core.jmap.vapid.clone(),
+                                    );
                                 } else {
                                     trc::event!(
                                         PushSubscription(PushSubscriptionEvent::Error),
