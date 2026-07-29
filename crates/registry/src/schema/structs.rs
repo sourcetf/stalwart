@@ -3185,6 +3185,8 @@ pub struct Jmap {
     pub web_push_key: SecretTextOptional,
     #[serde(rename = "webPushContact")]
     pub web_push_contact: Option<String>,
+    #[serde(rename = "maxPushSize")]
+    pub max_push_size: u64,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

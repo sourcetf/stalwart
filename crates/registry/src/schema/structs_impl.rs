@@ -22798,7 +22798,7 @@ impl InMemoryStoreBase {
 
 impl ObjectImpl for Jmap {
     const FLAGS: u64 = OBJ_SINGLETON;
-    const VERSION: u8 = 1;
+    const VERSION: u8 = 2;
     const OBJECT: ObjectType = ObjectType::Jmap;
 
     fn validate(&self, errors: &mut Vec<ValidationError>) -> bool {
@@ -22891,6 +22891,10 @@ impl ObjectImpl for Jmap {
                 errors.push(ValidationError::required(Property::WebPushContact));
             }
         }
+        let value = &self.max_push_size;
+        if *value < 512 {
+            errors.push(ValidationError::min_value(Property::MaxPushSize, 512));
+        }
         errors.len() == neb
     }
 
@@ -22929,6 +22933,7 @@ impl Pickle for Jmap {
         self.max_subscriptions.pickle(out);
         self.web_push_key.pickle(out);
         self.web_push_contact.pickle(out);
+        self.max_push_size.pickle(out);
     }
 
     fn unpickle(stream: &mut crate::pickle::PickledStream<'_>) -> Option<Self> {
@@ -22967,6 +22972,9 @@ impl Pickle for Jmap {
         if stream.version() >= 1 {
             this.web_push_contact = Pickle::unpickle(stream)?;
         }
+        if stream.version() >= 2 {
+            this.max_push_size = Pickle::unpickle(stream)?;
+        }
         Some(this)
     }
 }
@@ -23004,13 +23012,14 @@ impl Default for Jmap {
             max_subscriptions: Some(15u64),
             web_push_key: Default::default(),
             web_push_contact: Default::default(),
+            max_push_size: 4096u64,
         }
     }
 }
 
 impl IntoValue for Jmap {
     fn into_value(self) -> JmapValue<'static> {
-        let mut map = jmap_tools::Map::with_capacity(32);
+        let mut map = jmap_tools::Map::with_capacity(33);
         map.insert_unchecked(
             Property::ParseLimitEvent,
             self.parse_limit_event.into_value(),
@@ -23095,6 +23104,7 @@ impl IntoValue for Jmap {
         );
         map.insert_unchecked(Property::WebPushKey, self.web_push_key.into_value());
         map.insert_unchecked(Property::WebPushContact, self.web_push_contact.into_value());
+        map.insert_unchecked(Property::MaxPushSize, self.max_push_size.into_value());
         JmapValue::Object(map)
     }
 }
@@ -23142,6 +23152,7 @@ impl RegistryJsonPropertyPatch for Jmap {
             Some(Property::WebPushContact) => self
                 .web_push_contact
                 .patch(pointer.with_validators(&[StringValidator::Trim]), value),
+            Some(Property::MaxPushSize) => self.max_push_size.patch(pointer, value),
             Some(Property::Type) => Ok(MaybeUnpatched::Unpatched {
                 property: Property::Type,
                 value,

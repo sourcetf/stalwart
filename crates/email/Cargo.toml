@@ -1,6 +1,6 @@
 [package]
 name = "email"
-version = "0.16.15"
+version = "0.16.16"
 edition = "2024"
 
 [dependencies]
@@ -9,6 +9,8 @@ nlp = { path = "../nlp" }
 store = { path = "../store" }
 trc = { path = "../trc" }
 types = { path = "../types" }
+jmap_proto = { path = "../jmap-proto" }
+jmap-tools = { version = "0.1" }
 common = { path =  "../common" }
 directory = { path =  "../directory" }
 groupware = { path =  "../groupware" }

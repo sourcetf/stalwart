@@ -1,6 +1,6 @@
 [package]
 name = "services"
-version = "0.16.15"
+version = "0.16.16"
 edition = "2024"
 
 [dependencies]
@@ -14,12 +14,14 @@ groupware = { path = "../groupware" }
 spam-filter = { path = "../spam-filter" }
 types = { path = "../types" }
 jmap_proto = { path = "../jmap-proto" }
+jmap-tools = { version = "0.1" }
 directory = { path =  "../directory" }
 registry = { path =  "../registry" }
 smtp-proto = { version = "0.2", features = ["rkyv", "serde"] }
 tokio = { version = "1.47", features = ["rt"] }
 mail-parser = { version = "0.11", features = ["full_encoding", "rkyv"] }
-mail-builder = { version = "0.4" } 
+mail-builder = { version = "0.4" }
+aho-corasick = { version = "1.1" }
 calcard = { version = "0.3", features = ["rkyv"] }
 chrono = { version = "0.4", features = ["unstable-locales"] }
 serde = { version = "1.0", features = ["derive"]}
