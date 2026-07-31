@@ -12,6 +12,7 @@ If you are upgrading from v0.16.x, replace the binary (or run `docker pull`). If
 ## Changed
 
 ## Fixed
+- Meilisearch: Verify index existence using `GET` instead of creating a new task which times out on busy servers.
 
 ## [0.16.15] - 2026-07-26
 
