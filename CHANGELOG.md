@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.16.16] - 2026-07-XX
+## [0.16.16] - 2026-08-XX
 
 If you are upgrading from v0.16.x, replace the binary (or run `docker pull`). If you are upgrading from v0.15.x and below, please read the [upgrading documentation](https://github.com/stalwartlabs/stalwart/blob/main/UPGRADING/v0_16.md) for more information on how to upgrade from previous versions.
 
@@ -13,6 +13,7 @@ If you are upgrading from v0.16.x, replace the binary (or run `docker pull`). If
 
 ## Fixed
 - Meilisearch: Verify index existence using `GET` instead of creating a new task which times out on busy servers.
+- Brading: Stalwart logo flashes before the per-tenant logo is loaded on the login page.
 
 ## [0.16.15] - 2026-07-26
 
