@@ -4236,6 +4236,22 @@ pub struct PublicKey {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "@type")]
+pub enum PublicStringOptional {
+    None,
+    Value(PublicStringValue),
+    EnvironmentVariable(SecretKeyEnvironmentVariable),
+    File(SecretKeyFile),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct PublicStringValue {
+    #[serde(rename = "value")]
+    pub value: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(tag = "@type")]
 pub enum PublicText {
     Text(PublicTextValue),
     EnvironmentVariable(SecretKeyEnvironmentVariable),
@@ -4473,7 +4489,7 @@ pub struct S3Store {
     #[serde(rename = "bucket")]
     pub bucket: String,
     #[serde(rename = "accessKey")]
-    pub access_key: Option<String>,
+    pub access_key: PublicStringOptional,
     #[serde(rename = "secretKey")]
     pub secret_key: SecretKeyOptional,
     #[serde(rename = "securityToken")]

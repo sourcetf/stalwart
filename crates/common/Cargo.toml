@@ -91,6 +91,9 @@ quick-xml = "0.41"
 privdrop = "0.5.3"
 libc = "0.2.126"
 
+[target.'cfg(windows)'.dependencies]
+socket2 = "0.6"
+
 [features]
 test_mode = []
 dev_mode = []
