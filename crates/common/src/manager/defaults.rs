@@ -19,7 +19,7 @@ use registry::{
 };
 use std::str::FromStr;
 use store::{
-    rand::{Rng, distr::Alphanumeric, rng},
+    rand::{RngExt, distr::Alphanumeric, rng},
     registry::{
         bootstrap::Bootstrap,
         write::{RegistryWrite, RegistryWriteResult},

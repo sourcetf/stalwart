@@ -33,7 +33,7 @@ use std::future::Future;
 use std::str::FromStr;
 use store::{
     Serialize, ValueKey,
-    rand::{Rng, rng},
+    rand::{RngExt, rng},
     write::{AlignedBytes, Archive, Archiver, BatchBuilder, now},
 };
 use trc::{AddContext, ServerEvent};
