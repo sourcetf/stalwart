@@ -30,6 +30,7 @@ jobs:
             git add .github/workflows/ci.yml
             git checkout --ours .github/workflows/sync.yml
             git add .github/workflows/sync.yml
+            git checkout HEAD -- .github/workflows/
             git commit -m "Sync upstream (auto-resolved conflicts)"
           fi
           git push origin main
