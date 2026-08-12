@@ -22,15 +22,18 @@ jobs:
           git remote add upstream https://github.com/stalwartlabs/stalwart.git
           git fetch upstream
           git checkout main
-          if git merge upstream/main --no-edit; then
-            echo "Merge succeeded without conflicts"
+          if git merge upstream/main --no-edit --no-commit; then
+            echo "Merge succeeded"
           else
-            echo "Merge conflicts detected, resolving automatically..."
-            git checkout --ours .github/workflows/ci.yml
-            git add .github/workflows/ci.yml
-            git checkout --ours .github/workflows/sync.yml
-            git add .github/workflows/sync.yml
-            git checkout HEAD -- .github/workflows/
-            git commit -m "Sync upstream (auto-resolved conflicts)"
+            echo "Merge has conflicts or needs resolution"
           fi
+          git reset HEAD .github/workflows/ || true
+          git checkout HEAD -- .github/workflows/
+          git clean -fd .github/workflows/
+          if git diff --cached --quiet && git diff --quiet; then
+            echo "Nothing to sync"
+            exit 0
+          fi
+          git add -A
+          git commit -m "Sync upstream (exclude workflow changes)"
           git push origin main
