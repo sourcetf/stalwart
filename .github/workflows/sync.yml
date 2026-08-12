@@ -1,9 +1,10 @@
 name: Sync Upstream
 on:
   schedule:
-    - cron: '0 0 * * *'  
-  workflow_dispatch:   
-
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
 jobs:
   sync:
     runs-on: ubuntu-latest
@@ -12,18 +13,23 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
-
       - name: Configure Git
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-
       - name: Add upstream and sync
         run: |
           git remote add upstream https://github.com/stalwartlabs/stalwart.git
           git fetch upstream
           git checkout main
-          git checkout --ours .github/workflows/ci.yml
-          git add .github/workflows/ci.yml
-          git merge upstream/main --no-edit
+          if git merge upstream/main --no-edit; then
+            echo "Merge succeeded without conflicts"
+          else
+            echo "Merge conflicts detected, resolving automatically..."
+            git checkout --ours .github/workflows/ci.yml
+            git add .github/workflows/ci.yml
+            git checkout --ours .github/workflows/sync.yml
+            git add .github/workflows/sync.yml
+            git commit -m "Sync upstream (auto-resolved conflicts)"
+          fi
           git push origin main
