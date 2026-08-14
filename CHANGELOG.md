@@ -8,11 +8,18 @@ If you are upgrading from v0.16.x, replace the binary (or run `docker pull`). If
 
 ## Added
 - Reporting: `inboundReportMaxSize` setting, which bounds the size of a decompressed inbound DMARC or TLS report (default 25MB).
+- RocksDB: `cacheSize` setting, which bounds the total memory shared by the block caches of every column family (default 128MB).
 
 ## Changed
+- JMAP: `Identity/get` keeps identities in sync with the account's e-mail addresses.
+- MTA: Queue scheduler no longer rescans the queue from the earliest pending event and coalesces bursts of delivery completions into a single scan.
+- RocksDB: 
+  - Column families are tuned for the access pattern of the data they hold.
+  - Range iteration uses bounded iterators and no longer reads values when only keys were requested.
 
 ## Fixed
 - JMAP: Setting `uploadTtl` to 1ms triggers panic.
+- RocksDB: `bufferSize` setting was applied to the unused default column family and had no effect.
 
 ## [0.16.17] - 2026-08-10
 

@@ -514,6 +514,7 @@ impl EnumImpl for Property {
             b"bucket" => Property::Bucket,
             b"bufferSize" => Property::BufferSize,
             b"buffered" => Property::Buffered,
+            b"cacheSize" => Property::CacheSize,
             b"canonicalization" => Property::Canonicalization,
             b"capacityClient" => Property::CapacityClient,
             b"capacityReadBuffer" => Property::CapacityReadBuffer,
@@ -1448,6 +1449,7 @@ impl EnumImpl for Property {
             Property::Bucket => "bucket",
             Property::BufferSize => "bufferSize",
             Property::Buffered => "buffered",
+            Property::CacheSize => "cacheSize",
             Property::Canonicalization => "canonicalization",
             Property::CapacityClient => "capacityClient",
             Property::CapacityReadBuffer => "capacityReadBuffer",
@@ -2386,6 +2388,7 @@ impl EnumImpl for Property {
             658 => Some(Property::Bucket),
             656 => Some(Property::BufferSize),
             863 => Some(Property::Buffered),
+            929 => Some(Property::CacheSize),
             216 => Some(Property::Canonicalization),
             584 => Some(Property::CapacityClient),
             585 => Some(Property::CapacityReadBuffer),
@@ -3212,7 +3215,7 @@ impl EnumImpl for Property {
         }
     }
 
-    const COUNT: usize = 929;
+    const COUNT: usize = 930;
 }
 
 impl serde::Serialize for Property {
