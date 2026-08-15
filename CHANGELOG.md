@@ -19,6 +19,7 @@ If you are upgrading from v0.16.x, replace the binary (or run `docker pull`). If
 
 ## Fixed
 - JMAP: Setting `uploadTtl` to 1ms triggers panic.
+- WebPush: Validate push URL and use `application/octet-stream` as `Content-Type` for encrypted payloads.
 - RocksDB: `bufferSize` setting was applied to the unused default column family and had no effect.
 
 ## [0.16.17] - 2026-08-10
