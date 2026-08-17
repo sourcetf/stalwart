@@ -30514,7 +30514,9 @@ impl RegistryJsonPropertyPatch for OidcDirectory {
             Some(Property::ClaimName) => self
                 .claim_name
                 .patch(pointer.with_validators(&[StringValidator::Trim]), value),
-            Some(Property::ClaimGroups) => self.claim_groups.patch(pointer, value),
+            Some(Property::ClaimGroups) => self
+                .claim_groups
+                .patch(pointer.with_validators(&[StringValidator::Trim]), value),
             Some(Property::MemberTenantId) => self
                 .member_tenant_id
                 .patch(pointer.assert_can_set_tenant()?, value),
