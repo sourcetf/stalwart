@@ -19703,6 +19703,9 @@ impl ObjectImpl for Domain {
         i.unique(Property::Name, &self.name);
         i.text(Property::Text, &self.name);
         for value in self.aliases.iter() {
+            i.unique(Property::Aliases, value);
+        }
+        for value in self.aliases.iter() {
             i.text(Property::Text, value);
         }
         if let Some(value) = &self.description {

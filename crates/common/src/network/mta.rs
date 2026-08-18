@@ -38,7 +38,12 @@ use trc::{AddContext, SpamEvent};
 use types::id::Id;
 
 impl Server {
-    pub async fn rcpt_resolve(&self, rcpt: &str, session_id: u64) -> trc::Result<RcptResolution> {
+    pub async fn rcpt_resolve(
+        &self,
+        rcpt: &str,
+        allow_catch_all: bool,
+        session_id: u64,
+    ) -> trc::Result<RcptResolution> {
         // Obtain domain settings
         let Some((local_part, domain_part)) = rcpt.rsplit_once('@') else {
             return Ok(RcptResolution::UnknownDomain);
@@ -172,7 +177,9 @@ impl Server {
         }
 
         // Catch-all resolution
-        if let Some(catch_all) = &domain.catch_all {
+        if allow_catch_all
+            && let Some(catch_all) = &domain.catch_all
+        {
             return Ok(RcptResolution::Rewrite(catch_all.to_string()));
         }
 

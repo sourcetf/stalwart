@@ -3460,6 +3460,11 @@ impl ObjectType {
                     IndexSchemaValueType::Text,
                 ),
                 IndexSchema::new(
+                    Property::Aliases,
+                    IndexSchemaType::Unique,
+                    IndexSchemaValueType::Keyword,
+                ),
+                IndexSchema::new(
                     Property::MemberTenantId,
                     IndexSchemaType::Search,
                     IndexSchemaValueType::Id,

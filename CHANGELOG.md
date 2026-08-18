@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.16.18] - 2026-08-XX
+## [0.16.18] - 2026-08-17
 
 If you are upgrading from v0.16.x, replace the binary (or run `docker pull`). If you are upgrading from v0.15.x and below, please read the [upgrading documentation](https://github.com/stalwartlabs/stalwart/blob/main/UPGRADING/v0_16.md) for more information on how to upgrade from previous versions.
 
@@ -47,6 +47,7 @@ If you are upgrading from v0.16.x, replace the binary (or run `docker pull`). If
 - Directory:
   - Local group membership is cleared when the external directory is configured with a group claim or attribute that it does not return.
   - LDAP: Directories that store aliases as additional values of the primary address attribute provision no aliases.
+  - Mail addressed to a domain alias is rejected with `550 Relay not allowed`, unless the domain's primary name happened to be resolved earlier and is still cached.
 - RocksDB: `bufferSize` setting was applied to the unused default column family and had no effect.
 - Sieve: `include` statements fail to find system and user global scripts whose name contains uppercase characters.
 - Task manager: `totalDeadline` is measured from the time a task was created instead of its first failed attempt.

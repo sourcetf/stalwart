@@ -622,7 +622,7 @@ impl MessageWrapper {
     pub async fn expand_and_add_recipient(&mut self, rcpt: impl AsRef<str>, server: &Server) {
         let rcpt = rcpt.as_ref();
         match server
-            .rcpt_resolve(&rcpt.to_lowercase(), self.span_id)
+            .rcpt_resolve(&rcpt.to_lowercase(), true, self.span_id)
             .await
         {
             Ok(RcptResolution::Rewrite(rewritten)) => {
